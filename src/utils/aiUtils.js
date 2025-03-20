@@ -8,7 +8,7 @@ const memoryStore = {
     contexts: {},
     
     // Maximum number of messages to store per context
-    maxMessagesPerContext: 10,
+    maxMessagesPerContext: 100,
     
     // Add a message to a specific context
     addMessage(contextId, role, content) {

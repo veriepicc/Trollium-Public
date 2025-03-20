@@ -7,286 +7,431 @@ export default class ModuleSettings {
         this.components = [];
         this.initialized = false;
         this.isOpen = false;
-        this.settingsWrapper = null;
-        this.settingsId = `module-settings-${module.name.replace(/\s+/g, '-').toLowerCase()}`;
+        this.activeDropdown = null;
     }
 
     initialize() {
         if (this.initialized || !this.module?.options) return;
         
-        // Create a wrapper for the settings to improve scrolling
         this.settingsWrapper = document.createElement("div");
-        this.settingsWrapper.className = "module-settings scrollable";
-        this.settingsWrapper.id = this.settingsId;
-        
-        // Apply direct styles to ensure scrolling works
-        this.settingsWrapper.style.maxHeight = "300px";
-        this.settingsWrapper.style.overflow = "auto";
-        this.settingsWrapper.style.overflowX = "hidden";
-        
-        // Hide scrollbars
-        this.settingsWrapper.style.scrollbarWidth = "none";
-        this.settingsWrapper.style.msOverflowStyle = "none";
-        
-        // Create settings container inside wrapper
-        const settingsContainer = document.createElement("div");
-        settingsContainer.className = "module-settings-container";
-        this.settingsWrapper.appendChild(settingsContainer);
-        
-        // Completely remove the module title section
-        // We won't create any title element at all
-        
-        // Create the settings elements
-        Object.keys(this.module.options).forEach((key, index) => {
-            const settingValue = this.module.options[key];
-            const settingType = typeof settingValue;
-
-            let component;
-            if (key.toLowerCase().includes("color")) {
-                component = this.addColorPicker(key, settingsContainer);
-            } else if (settingType === "boolean" || settingValue === "true" || settingValue === "false") {
-                component = this.addCheckbox(key, settingsContainer);
-            } else if (settingType === "string") {
-                component = this.addStringInput(key, settingsContainer);
-            } else {
-                component = this.addNumberInput(key, settingsContainer);
-            }
-            
-            // Set animation index for staggered reveal
-            if (component) {
-                component.style.setProperty('--index', index);
-            }
-        });
-        
-        // Remove the separate description section that was previously at the bottom
-        // and rely on the hover tooltip instead
-
-        // Add the wrapper to the container
+        this.settingsWrapper.className = "module-settings-wrapper";
         this.container.appendChild(this.settingsWrapper);
         
-        // Initially hide settings
-        this.settingsWrapper.style.display = "none";
-        this.initialized = true;
+        this.container.style.position = "relative";
+        this.container.style.display = "block";
         
-        // Add click outside handler that keeps GUI open
-        document.addEventListener("click", this.handleOutsideClick = (e) => {
-            if (this.isOpen && !this.settingsWrapper.contains(e.target) && !this.container.contains(e.target)) {
-                // If we clicked outside the settings, close them but don't close GUI
-                e.stopPropagation(); // Prevent event from closing the GUI
-                this.toggle(); // Close the settings
+        const keys = Object.keys(this.module.options);
+        const groups = this.groupSettings(keys);
+        this.createSettings(groups);
+        
+        this.initialized = true;
+    }
+    
+    groupSettings(keys) {
+        return keys.reduce((acc, key) => {
+            const value = this.module.options[key];
+            const type = typeof value;
+            
+            if (key.toLowerCase().includes("color")) {
+                acc.color.push(key);
+            } else if (this.module.modes && this.module.modes[key]) {
+                acc.mode.push(key);
+            } else if (type === "boolean" || value === "true" || value === "false") {
+                acc.boolean.push(key);
+            } else {
+                acc.other.push(key);
+            }
+            return acc;
+        }, { boolean: [], mode: [], other: [], color: [] });
+    }
+    
+    createSettings(groups) {
+        [...groups.boolean, ...groups.mode, ...groups.other, ...groups.color].forEach(key => {
+            const value = this.module.options[key];
+            const type = typeof value;
+
+            if (key.toLowerCase().includes("color")) {
+                this.addColorPicker(key);
+            } else if (this.module.modes && this.module.modes[key]) {
+                this.addModeSelector(key);
+            } else if (type === "boolean" || value === "true" || value === "false") {
+                this.addCheckbox(key);
+            } else if (type === "string") {
+                this.addStringInput(key);
+            } else {
+                this.addNumberInput(key);
             }
         });
     }
 
     toggle() {
         this.isOpen = !this.isOpen;
-        
-        if (this.isOpen && this?.settingsWrapper?.classList) {
-            // Show settings with clean animation
-            this.settingsWrapper.style.display = "block";
-            this.settingsWrapper.classList.add("module-settings-enter");
-            this.settingsWrapper.classList.remove("module-settings-exit");
-            
-            // No flashing or additional animations for the containers
-            // Don't add any animate-in classes to the child elements
-            
-            // Add margin to button container
-            this.container.style.marginBottom = "5px";
-        } else if (this?.settingsWrapper?.classList) {
-            // Hide settings with clean animation
-            this.settingsWrapper.classList.remove("module-settings-enter");
-            this.settingsWrapper.classList.add("module-settings-exit");
-            
-            // Remove margin from button container
-            this.container.style.marginBottom = "0px";
-            
-            // Hide the element after animation completes
-            setTimeout(() => {
-                this.settingsWrapper.style.display = "none";
-            }, 200);
+        if (this.isOpen) {
+            this.settingsWrapper.classList.add("module-settings-open");
+        } else {
+            this.settingsWrapper.classList.remove("module-settings-open");
+            this.closeAllDropdowns();
         }
     }
 
-    addNumberInput(name, parent) {
-        const container = document.createElement("div");
-        container.className = "gui-setting-container";
+    cleanup() {
+        this.closeAllDropdowns();
+        this.isOpen = false;
+        if (this.settingsWrapper) {
+            this.settingsWrapper.classList.remove("module-settings-open");
+        }
+        
+        if (this.currentOptionsList && document.body.contains(this.currentOptionsList)) {
+            document.body.removeChild(this.currentOptionsList);
+            this.currentOptionsList = null;
+        }
+        
+        document.removeEventListener("click", this.outsideClickHandler);
+        window.removeEventListener("scroll", this.hideDropdown, true);
+        window.removeEventListener("resize", this.hideDropdown, true);
+    }
 
-        const label = document.createElement("span");
+    closeAllDropdowns() {
+        const optionsContainers = document.querySelectorAll(".gui-dropdown-options");
+        optionsContainers.forEach(container => {
+            if (document.body.contains(container)) {
+                document.body.removeChild(container);
+            }
+        });
+        
+        if (this.currentOptionsList) {
+            this.currentOptionsList = null;
+        }
+        
+        if (this.activeDropdown) {
+            this.activeDropdown.classList.remove("open");
+            this.activeDropdown = null;
+        }
+        
+        document.removeEventListener("click", this.outsideClickHandler);
+        window.removeEventListener("scroll", this.hideDropdown, true);
+        window.removeEventListener("resize", this.hideDropdown, true);
+    }
+
+    addNumberInput(name) {
+        const container = document.createElement("div");
+        container.className = "gui-setting-container setting-number";
+        
+        const label = document.createElement("div");
         label.className = "gui-setting-label";
         label.textContent = name;
-
+        
         const input = document.createElement("input");
         input.type = "text";
         input.className = "gui-text-input";
         input.value = this.module.options[name];
-
-        let lastValidValue = input.value;
-
+        
         input.addEventListener("input", () => {
             const value = input.value.trim();
             if (!isNaN(value) && value !== "") {
-                lastValidValue = value;
                 this.module.options[name] = value;
                 events.emit("setting.update", this.module);
-                
-                // Add input animation
-                input.classList.add("value-changed");
-                setTimeout(() => input.classList.remove("value-changed"), 500);
             }
         });
 
         input.addEventListener("blur", () => {
             if (isNaN(input.value) || input.value.trim() === "") {
-                input.classList.add("invalid");
-                setTimeout(() => {
-                    input.classList.remove("invalid");
-                    input.value = lastValidValue;
-                }, 300);
+                input.value = this.module.options[name];
             }
         });
 
         input.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                input.blur();
-            }
+            if (e.key === "Enter") input.blur();
         });
 
         container.appendChild(label);
         container.appendChild(input);
-        parent.appendChild(container);
+        this.settingsWrapper.appendChild(container);
         this.components.push(container);
-        
-        return container;
     }
 
-    addStringInput(name, parent) {
+    addStringInput(name) {
         const container = document.createElement("div");
-        container.className = "gui-setting-container";
-
-        const label = document.createElement("span");
+        container.className = "gui-setting-container setting-string";
+        
+        const label = document.createElement("div");
         label.className = "gui-setting-label";
         label.textContent = name;
-
+        
         const input = document.createElement("input");
         input.type = "text";
         input.className = "gui-text-input";
         input.value = this.module.options[name];
-
+        
         input.addEventListener("input", () => {
-            const value = input.value.trim();
-            this.module.options[name] = value;
+            this.module.options[name] = input.value;
             events.emit("setting.update", this.module);
-            
-            // Add input animation
-            input.classList.add("value-changed");
-            setTimeout(() => input.classList.remove("value-changed"), 500);
+        });
+
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") input.blur();
         });
 
         container.appendChild(label);
         container.appendChild(input);
-        parent.appendChild(container);
+        this.settingsWrapper.appendChild(container);
         this.components.push(container);
-        
-        return container;
     }
 
-    addCheckbox(name, parent) {
+    addCheckbox(name) {
         const container = document.createElement("div");
-        container.className = "gui-setting-container";
-
-        const label = document.createElement("span");
+        container.className = "gui-setting-container setting-boolean";
+        
+        const label = document.createElement("div");
         label.className = "gui-setting-label";
         label.textContent = name;
-
+        
         const checkbox = document.createElement("div");
         checkbox.className = "gui-checkbox";
-        checkbox.classList.toggle("enabled", this.module.options[name] === true || this.module.options[name] === "true");
+        
+        if (this.module.options[name] === true || this.module.options[name] === "true") {
+            checkbox.classList.add("enabled");
+        }
 
-        checkbox.addEventListener("click", () => {
-            const wasChecked = checkbox.classList.contains("enabled");
-            checkbox.classList.toggle("enabled");
-            this.module.options[name] = (!wasChecked).toString();
-            events.emit("setting.update", this.module);
+        container.addEventListener("click", () => {
+            const newState = !(this.module.options[name] === true || this.module.options[name] === "true");
+            this.module.options[name] = newState.toString();
             
-            // Add checkbox animation
-            checkbox.classList.add("clicked");
-            setTimeout(() => checkbox.classList.remove("clicked"), 500);
+            if (newState) {
+                checkbox.classList.add("enabled");
+            } else {
+                checkbox.classList.remove("enabled");
+            }
+            
+            events.emit("setting.update", this.module);
         });
 
         container.appendChild(label);
         container.appendChild(checkbox);
-        parent.appendChild(container);
+        this.settingsWrapper.appendChild(container);
         this.components.push(container);
-        
-        return container;
     }
 
-    addColorPicker(name, parent) {
+    addColorPicker(name) {
         const container = document.createElement("div");
-        container.className = "gui-setting-container";
-
-        const label = document.createElement("span");
+        container.className = "gui-setting-container setting-color";
+        
+        const label = document.createElement("div");
         label.className = "gui-setting-label";
         label.textContent = name;
-
+        
+        const colorRow = document.createElement("div");
+        colorRow.className = "gui-color-row";
+        
         const colorPickerBg = document.createElement("div");
         colorPickerBg.className = "gui-color-picker";
         colorPickerBg.style.background = this.module.options[name];
-
+        
         const colorPicker = document.createElement("input");
         colorPicker.type = "color";
         colorPicker.className = "gui-color-input";
+        colorPicker.value = this.rgbToHex(this.module.options[name]);
         
-        // Convert RGB to HEX for color input
-        if (this.module.options[name].startsWith('rgb')) {
-            colorPicker.value = this.rgbToHex(this.module.options[name]);
-        } else {
-            colorPicker.value = this.module.options[name];
-        }
+        const colorText = document.createElement("input");
+        colorText.type = "text";
+        colorText.className = "gui-text-input";
+        colorText.value = this.formatColor(this.module.options[name]);
         
-        colorPickerBg.appendChild(colorPicker);
-
         colorPicker.addEventListener("input", (event) => {
-            colorPickerBg.style.background = event.target.value;
-            this.module.options[name] = event.target.value;
+            const hexColor = event.target.value;
+            colorPickerBg.style.background = hexColor;
+            colorText.value = hexColor;
+            this.module.options[name] = hexColor;
             events.emit("setting.update", this.module);
-            
-            // Add color animation
-            colorPickerBg.classList.add("color-changed");
-            setTimeout(() => colorPickerBg.classList.remove("color-changed"), 500);
         });
 
-        container.appendChild(label);
-        container.appendChild(colorPickerBg);
-        parent.appendChild(container);
-        this.components.push(container);
+        colorText.addEventListener("blur", () => {
+            try {
+                const color = colorText.value;
+                colorPickerBg.style.background = color;
+                this.module.options[name] = color;
+                events.emit("setting.update", this.module);
+            } catch (e) {
+                colorText.value = this.formatColor(this.module.options[name]);
+            }
+        });
         
-        return container;
-    }
-    
-    // Utility function to convert RGB to HEX
-    rgbToHex(rgbStr) {
-        try {
-            // Extract R, G, B values from string like "rgb(64, 190, 255)"
-            const rgb = rgbStr.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)$/i);
-            if (!rgb) return "#40BEFF"; // Default fallback if format doesn't match
-            
-            // Convert each component to hex
-            const r = parseInt(rgb[1], 10).toString(16).padStart(2, '0');
-            const g = parseInt(rgb[2], 10).toString(16).padStart(2, '0');
-            const b = parseInt(rgb[3], 10).toString(16).padStart(2, '0');
-            
-            return `#${r}${g}${b}`;
-        } catch (e) {
-            console.error("RGB to HEX conversion error:", e);
-            return "#40BEFF"; // Fallback on error
-        }
+        colorText.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") colorText.blur();
+        });
+
+        colorPickerBg.appendChild(colorPicker);
+        colorRow.appendChild(colorPickerBg);
+        colorRow.appendChild(colorText);
+        container.appendChild(label);
+        container.appendChild(colorRow);
+        this.settingsWrapper.appendChild(container);
+        this.components.push(container);
     }
 
-    // Add method to clean up event listeners when module is destroyed
-    cleanup() {
-        if (this.handleOutsideClick) {
-            document.removeEventListener("click", this.handleOutsideClick);
+    addModeSelector(name) {
+        const container = document.createElement("div");
+        container.className = "gui-setting-container setting-mode";
+        
+        const label = document.createElement("div");
+        label.className = "gui-setting-label";
+        label.textContent = name;
+        
+        const modes = this.module.modes?.[name] || [];
+        const currentMode = this.module.options[name];
+        
+        const dropdown = document.createElement("div");
+        dropdown.className = "gui-dropdown";
+        
+        const selectedText = document.createElement("div");
+        selectedText.className = "gui-dropdown-selected";
+        selectedText.textContent = currentMode;
+        
+        const arrow = document.createElement("div");
+        arrow.className = "gui-dropdown-arrow";
+        
+        dropdown.appendChild(selectedText);
+        dropdown.appendChild(arrow);
+        
+        const showDropdown = () => {
+            const optionsList = document.createElement("div");
+            optionsList.className = "gui-dropdown-options";
+            
+            this.currentOptionsList = optionsList;
+            
+            modes.forEach(mode => {
+                const option = document.createElement("div");
+                option.className = "gui-dropdown-option";
+                if (mode === this.module.options[name]) {
+                    option.classList.add("selected");
+                }
+                option.textContent = mode;
+                
+                option.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    
+                    selectedText.textContent = mode;
+                    this.module.options[name] = mode;
+                    events.emit("setting.update", this.module);
+                    
+                    hideDropdown();
+                });
+                
+                optionsList.appendChild(option);
+            });
+            
+            document.body.appendChild(optionsList);
+            
+            const rect = dropdown.getBoundingClientRect();
+            optionsList.style.width = rect.width + "px";
+            
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const optionsHeight = Math.min(modes.length * 30, 150);
+            
+            if (spaceBelow < optionsHeight && rect.top > optionsHeight) {
+                optionsList.style.bottom = (window.innerHeight - rect.top) + "px";
+                optionsList.style.top = "auto";
+                optionsList.classList.add("dropdown-up");
+            } else {
+                optionsList.style.top = rect.bottom + "px";
+                optionsList.style.bottom = "auto";
+            }
+            
+            optionsList.style.left = rect.left + "px";
+            
+            setTimeout(() => {
+                document.addEventListener("click", this.outsideClickHandler);
+                window.addEventListener("scroll", this.hideDropdown, true);
+                window.addEventListener("resize", this.hideDropdown, true);
+            }, 0);
+        };
+        
+        const hideDropdown = () => {
+            if (this.currentOptionsList && document.body.contains(this.currentOptionsList)) {
+                document.body.removeChild(this.currentOptionsList);
+                this.currentOptionsList = null;
+            }
+            if (dropdown) dropdown.classList.remove("open");
+            this.activeDropdown = null;
+            document.removeEventListener("click", this.outsideClickHandler);
+            window.removeEventListener("scroll", this.hideDropdown, true);
+            window.removeEventListener("resize", this.hideDropdown, true);
+        };
+        
+        const outsideClickHandler = (e) => {
+            if (!dropdown.contains(e.target) && (!this.currentOptionsList || !this.currentOptionsList.contains(e.target))) {
+                hideDropdown();
+            }
+        };
+        
+        dropdown.addEventListener("click", (e) => {
+            e.stopPropagation();
+            
+            if (dropdown.classList.contains("open")) {
+                hideDropdown();
+                return;
+            }
+            
+            this.closeAllDropdowns();
+            
+            dropdown.classList.add("open");
+            this.activeDropdown = dropdown;
+            
+            showDropdown();
+        });
+        
+        this.outsideClickHandler = outsideClickHandler;
+        this.hideDropdown = hideDropdown;
+        
+        container.appendChild(label);
+        container.appendChild(dropdown);
+        this.settingsWrapper.appendChild(container);
+        this.components.push(container);
+    }
+    
+    positionDropdown(dropdown, optionsList) {
+        const rect = dropdown.getBoundingClientRect();
+        const containerRect = this.settingsWrapper.getBoundingClientRect();
+        
+        optionsList.style.position = "absolute";
+        optionsList.style.width = rect.width + "px";
+        optionsList.style.left = "0";
+        
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const optionsHeight = optionsList.clientHeight || 150;
+        
+        if (spaceBelow < optionsHeight && rect.top > optionsHeight) {
+            optionsList.style.bottom = rect.height + "px";
+            optionsList.style.top = "auto";
+            optionsList.classList.add("dropdown-up");
+        } else {
+            optionsList.style.top = rect.height + "px";
+            optionsList.style.bottom = "auto";
+            optionsList.classList.remove("dropdown-up");
         }
+        
+        if (optionsList.getBoundingClientRect().right > containerRect.right) {
+            const overflow = optionsList.getBoundingClientRect().right - containerRect.right;
+            optionsList.style.left = -overflow + "px";
+        }
+    }
+    
+    rgbToHex(rgb) {
+        if (!rgb) return "#000000";
+        if (rgb.startsWith("#")) return rgb;
+        
+        const rgbMatch = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/i);
+        if (!rgbMatch) return "#000000";
+        
+        const r = parseInt(rgbMatch[1]);
+        const g = parseInt(rgbMatch[2]);
+        const b = parseInt(rgbMatch[3]);
+        
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    
+    formatColor(color) {
+        if (!color) return "#000000";
+        return color.startsWith("rgb") ? this.rgbToHex(color) : color;
     }
 }

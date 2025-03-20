@@ -203,8 +203,8 @@
 
 /* Improved color picker */
 .gui-color-picker {
-    width: 18px;
-    height: 18px;
+    width: 26px;
+    height: 26px;
     border-radius: 4px;
     position: relative;
     margin: 4px;
@@ -222,8 +222,8 @@
 }
 
 .gui-color-input {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     opacity: 0;
     cursor: pointer;
 }
@@ -543,47 +543,7 @@
     }
 }
 
-/* Animated buttons with staggered reveal */
-.with-animations .gui-button {
-    animation: buttonReveal var(--button-appear-duration) var(--spring-easing) both;
-    animation-delay: calc(var(--index, 0) * 40ms + 100ms);
-}
 
-@keyframes buttonReveal {
-    0% {
-        opacity: 0;
-        transform: translateX(-10px);
-        filter: blur(2px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0);
-        filter: blur(0);
-    }
-}
-
-.with-animations .gui-button.enabled {
-    position: relative;
-    overflow: hidden;
-}
-
-.with-animations .gui-button.enabled::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(
-        to right,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.2) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    transform: skewX(-25deg);
-    animation: shimmer 3s infinite;
-    will-change: transform;
-}
 
 @keyframes shimmer {
     0% {
@@ -1850,4 +1810,306 @@ body.search-mode .gui-search-container {
 /* Better backdrop styling */
 .gui-ai-model-backdrop {
     backdrop-filter: blur(2px);
+}
+
+/* Module settings animations and styles */
+.module-settings-wrapper {
+    display: none;
+    flex-direction: column;
+    background-color: rgba(24, 24, 24, 0.95);
+    border-radius: 4px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    margin-top: 5px;
+    z-index: 5;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+    transform: translateY(-10px);
+    opacity: 0;
+    transition: opacity 0.05s ease, transform 0.05s ease;
+}
+
+.module-settings-wrapper.module-settings-open {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.gui-setting-container {
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background 0.05s linear;
+}
+
+/* Common setting styles */
+.gui-setting-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Boolean setting style */
+.setting-boolean {
+    height: 32px;
+    cursor: pointer;
+    padding: 0 5px;
+    background: rgba(30, 30, 30, 0.4);
+    border-radius: 3px;
+    flex-direction: row;
+}
+
+.setting-boolean:hover {
+    background: rgba(40, 40, 40, 0.5);
+}
+
+/* Number and String setting styles */
+.setting-number, .setting-string, .setting-color, .setting-mode {
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Label styling */
+.gui-setting-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 5px;
+}
+
+.setting-boolean .gui-setting-label {
+    flex: 1;
+    text-align: left;
+    pointer-events: none;
+}
+
+.setting-number .gui-setting-label,
+.setting-string .gui-setting-label,
+.setting-color .gui-setting-label,
+.setting-mode .gui-setting-label {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+/* Checkbox styling with accent color */
+.gui-checkbox {
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
+    background: rgba(30, 30, 30, 0.7);
+    transition: all 0.05s linear;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.gui-checkbox.enabled {
+    background: var(--trollium-accent-color);
+    transform: scale(1.05);
+    box-shadow: 0 0 8px var(--glow-color);
+}
+
+/* Input styling with accent color focus */
+.gui-text-input {
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 3px;
+    background: rgba(30, 30, 30, 0.7);
+    border: 1px solid rgba(60, 60, 60, 0.7);
+    color: white;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+    width: 100%;
+    text-align: center;
+    transition: all 0.05s linear;
+}
+
+.gui-text-input:hover {
+    border: 1px solid rgba(80, 80, 80, 0.9);
+}
+
+.gui-text-input:focus {
+    border: 1px solid rgb(64, 190, 255);
+    box-shadow: 0 0 0 2px var(--glow-color);
+}
+
+/* Color picker styling with accent color */
+.gui-color-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.gui-color-picker {
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid rgba(60, 60, 60, 0.7);
+    position: relative;
+    overflow: hidden;
+    margin-right: 8px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: all 0.05s linear;
+}
+
+.gui-color-picker:hover {
+    border: 1px solid rgb(64, 190, 255);
+    box-shadow: 0 0 4px var(--glow-color);
+}
+
+.gui-color-input {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Fixed dropdown styling with accent color and proper positioning */
+.gui-dropdown {
+    position: relative;
+    width: 100%;
+    height: 28px;
+    background: rgba(30, 30, 30, 0.95);
+    border-radius: 3px;
+    border: 1px solid rgba(60, 60, 60, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gui-dropdown:hover {
+    background: rgba(40, 40, 40, 1);
+    border-color: rgba(64, 190, 255, 0.7);
+    box-shadow: 0 0 5px rgba(64, 190, 255, 0.2);
+}
+
+.gui-dropdown-selected {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 8px;
+    color: white;
+    font-size: 13px;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.gui-dropdown-arrow {
+    width: 0;
+    height: 0;
+    margin-right: 10px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gui-dropdown.open .gui-dropdown-arrow {
+    transform: rotate(180deg);
+    border-top-color: rgb(64, 190, 255);
+}
+
+.gui-dropdown.open {
+    background: rgba(40, 40, 40, 1);
+    border-color: rgb(64, 190, 255);
+    box-shadow: 0 0 6px rgba(64, 190, 255, 0.3);
+}
+
+.gui-dropdown-options {
+    position: fixed;
+    z-index: 9999;
+    background: rgba(35, 35, 35, 1);
+    border-radius: 3px;
+    width: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(64, 190, 255, 0.7);
+    max-height: 150px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    transform-origin: top center;
+    animation: dropdown-appear 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes dropdown-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scaleY(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
+
+.gui-dropdown-options::-webkit-scrollbar {
+    display: none;
+}
+
+.gui-dropdown-option {
+    padding: 8px 10px;
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gui-dropdown-option:last-child {
+    border-bottom: none;
+}
+
+.gui-dropdown-option:hover {
+    background: rgba(64, 190, 255, 0.2);
+    color: rgb(200, 235, 255);
+}
+
+.gui-dropdown-option.selected {
+    background: rgba(64, 190, 255, 0.3);
+    color: rgb(64, 190, 255);
+    font-weight: 500;
+}
+
+.gui-dropdown-option.selected:hover {
+    background: rgba(64, 190, 255, 0.4);
+}
+
+/* For dropdowns that appear above instead of below */
+.dropdown-up {
+    bottom: calc(100% + 1px);
+    top: auto !important;
+    transform-origin: bottom center;
+    animation: dropdown-appear-up 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes dropdown-appear-up {
+    from {
+        opacity: 0;
+        transform: translateY(5px) scaleY(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
 }
