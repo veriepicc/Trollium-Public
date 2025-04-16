@@ -98,20 +98,21 @@ export default {
         return hooks.noa.bloxd.entityNames[id].entityName;
     },
 
-    placeBlock (blockPosition, heldItem) {       
-        let checker = Object.values(hooks.findModule("checker:")).find(fn => fn.toString().startsWith("()=>"))();
+    placeBlock(blockPosition, heldItem) {       
+        const checker = Object.values(hooks.findModule("checker:"))
+            .find(fn => fn.toString().startsWith("()=>"))();
 
         hooks.sendPacket(packets.placeBlock, {
-            pos: blockPosition,
+            changePos: blockPosition,
             toBlock: heldItem.typeObj.id,
-            checker: checker
-        }, !0);
+            checker
+        }, true);
         
         hooks.noa.bloxd.setBlock(...blockPosition, heldItem.typeObj.id);
         
-        // remove the block you placed from your inventory
-        let inventory = hooks.noa.ents.getInventoryState(hooks.noa.playerEntity).inventory;
-        let itemIndex = inventory.items.findIndex(item => item?.typeObj == heldItem?.typeObj);
+        const inventory = hooks.noa.ents.getInventoryState(hooks.noa.playerEntity).inventory;
+        const itemIndex = inventory.items.findIndex(item => item?.typeObj === heldItem?.typeObj);
+        
         if (!hooks.noa.serverSettings.creative && itemIndex >= 0) {
             inventory.removeItem(itemIndex, 1);
         }
