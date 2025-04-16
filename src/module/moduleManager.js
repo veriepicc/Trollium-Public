@@ -14,6 +14,7 @@ import Bhop from "./modules/movement/Bhop";
 import BoatFly from "./modules/movement/BoatFly";
 import FireballFly from "./modules/movement/FireballFly";
 import HighJump from "./modules/movement/HighJump";
+import LowHop from "./modules/movement/LowHop";
 import NoClip from "./modules/movement/NoClip";
 import SafeWalk from "./modules/movement/Safewalk";
 import Scaffold from "./modules/movement/Scaffold";
@@ -85,6 +86,7 @@ export default {
             new BoatFly(),
             new FireballFly(),
             new HighJump(),
+            new LowHop(),
             new NoClip(),
             new SafeWalk(),
             new Scaffold(),
