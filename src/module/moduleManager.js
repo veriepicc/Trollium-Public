@@ -43,6 +43,7 @@ import AiTest from "./modules/misc/AiTest";
 import NoSlow from "./modules/movement/NoSlow";
 import IdentityCrisis from "./modules/misc/IdentityCrisis";
 import Twerk from "./modules/movement/Twerk";
+import MCF from "./modules/misc/MCF";
 
 export default {
     modules: {},
@@ -95,6 +96,7 @@ export default {
             new Blink(),
             new FastBreak(),
             new Killsults(),
+            new MCF(),
             new Aimbot(),
             new AntiRecoil(),
             new Killaura(),
