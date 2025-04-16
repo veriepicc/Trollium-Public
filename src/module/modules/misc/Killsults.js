@@ -1,6 +1,7 @@
 import Module from "../../module";
 import hooks from "../../../hooks";
 import gameUtils from "../../../utils/gameUtils";
+import packets from "../../../utils/packets";
 
 const insults = [
     "Did :user: pay for that loss?",
@@ -17,10 +18,8 @@ const insults = [
     ":user: is socially awkward",
     ":user: is the reason why society is failing",
     "Pay to lose",
-    "Why would I be cheating when I am recording?",
     "Does :user: need some pvp advice?",
     "I'd smack :user:, but that would be animal abuse",
-    "I don't cheat, :user: just needs to click faster",
     "Welcome to my rap.e dungeon! population: :user:!",
     "If the body is 70% water then how is :user:'s body 100% salt?",
     ":user: go drown in your own salt",
@@ -33,6 +32,9 @@ const insults = [
     "Just rubbed my baIIsack all over :user:s face.",
     ":user: just got AIDs.",
     ":user: just got molested.",
+    "EZZZZ",
+    "how are you so bad",
+    "bro didnt even try",
 ]
 
 export default class Killsults extends Module {
@@ -53,7 +55,7 @@ export default class Killsults extends Module {
             let insult = insults[Math.floor(Math.random() * insults.length)];
             let playerName = gameUtils.getPlayerName(data.deadEId);
             insult = insult.replace(":user:", playerName);
-            hooks.sendPacket(96, {
+            hooks.sendPacket(packets.sendChat, {
                 msg: insult,
                 channelName: null
             })

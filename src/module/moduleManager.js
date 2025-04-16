@@ -1,6 +1,5 @@
 import events from "../events";
 import ArrayList from "./modules/visual/Arraylist";
-import BottomChat from "./modules/visual/UITweaks";
 import configManager from "../config/manager";
 import hooks from "../hooks";
 
@@ -9,6 +8,7 @@ import Notifications from "./modules/visual/Notifications";
 import ViewModel from "./modules/visual/ViewModel";
 import Wireframe from "./modules/visual/Wireframe";
 import Watermark from "./modules/visual/Watermark";
+import Interface from "./modules/visual/Interface";
 import AutoSprint from "./modules/movement/AutoSprint";
 import Bhop from "./modules/movement/Bhop";
 import BoatFly from "./modules/movement/BoatFly";
@@ -42,7 +42,6 @@ import AiTest from "./modules/misc/AiTest";
 import NoSlow from "./modules/movement/NoSlow";
 import IdentityCrisis from "./modules/misc/IdentityCrisis";
 import Twerk from "./modules/movement/Twerk";
-import Speed from "./modules/movement/Speed";
 
 export default {
     modules: {},
@@ -75,9 +74,8 @@ export default {
     init () {
         this.addModules(
             new ArrayList(),
-            new BottomChat(),
+            new Interface(),
             new ESP(),
-            new UITweaks(),
             new ViewModel(),
             new Watermark(),
             new Wireframe(),
@@ -112,7 +110,6 @@ export default {
             new NoSlow(),
             new IdentityCrisis(),
             new Twerk(),
-            new Speed(),
             new AiTest(),
             new Notifications()
         );
@@ -163,5 +160,6 @@ export default {
         this.modules["Watermark"].enable();
         this.modules["AntiBan"].enable();
         this.modules["Notifications"].enable();
+        this.modules["Interface"].enable();
     }
 };

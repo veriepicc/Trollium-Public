@@ -77,14 +77,16 @@ export default {
 
     inGame: false,
 
-    freezeValue(obj, prop, value) {
-        obj.__defineGetter__(prop, () => value);
-        obj.__defineSetter__(prop, () => value);
+    freezeValue(obj, prop, callback) {
+        obj.__defineGetter__(prop, callback);
+        obj.__defineSetter__(prop, callback);
     },
 
-    unfreezeValue(obj, prop) {
+    unfreezeValue(obj, prop, value) {
         delete obj[prop];
+        obj[prop] = value;
     },
+
 
     selectInventorySlot(index) {
         let inventorySlots = document.getElementsByClassName("HotBarGameItemsContainer")[0].children;
