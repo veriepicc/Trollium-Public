@@ -9,6 +9,7 @@ import ViewModel from "./modules/visual/ViewModel";
 import Wireframe from "./modules/visual/Wireframe";
 import Watermark from "./modules/visual/Watermark";
 import Interface from "./modules/visual/Interface";
+import TargetHUD from "./modules/visual/TargetHUD";
 import AutoSprint from "./modules/movement/AutoSprint";
 import Bhop from "./modules/movement/Bhop";
 import BoatFly from "./modules/movement/BoatFly";
@@ -79,6 +80,7 @@ export default {
             new ViewModel(),
             new Watermark(),
             new Wireframe(),
+            new TargetHUD(),
             new AutoSprint(),
             new Bhop(),
             new BoatFly(),

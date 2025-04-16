@@ -1,0 +1,168 @@
+.targethud-container {
+    position: absolute;
+    z-index: 1000;
+    width: auto;
+    min-width: 150px;
+    max-width: none;
+    border-radius: var(--border-radius, 6px);
+    background: rgba(18, 18, 18, 0.8);
+    backdrop-filter: blur(var(--blur-intensity, 10px));
+    -webkit-backdrop-filter: blur(var(--blur-intensity, 10px));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    color: var(--text-color, #ffffff);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    transition: opacity 0.2s var(--decelerate-easing, cubic-bezier(0, 0, 0.2, 1)), 
+                transform 0.2s var(--spring-easing, cubic-bezier(0.2, 0.9, 0.3, 1.2));
+    user-select: none;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transform-origin: center;
+    text-align: center;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.targethud-hidden {
+    opacity: 0 !important;
+    transform: translateX(-50%) scale(0.97) !important;
+    pointer-events: none;
+}
+
+.targethud-container.dragging {
+    cursor: grabbing;
+}
+
+.targethud-content {
+    padding: 10px 15px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.targethud-content::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 50%);
+    pointer-events: none;
+}
+
+.targethud-player-name {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: visible;
+    text-align: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.targethud-player-name::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--trollium-accent-color, linear-gradient(90deg, rgb(64, 190, 255) 0%, rgb(129, 225, 255) 100%));
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.targethud-distance {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.targethud-distance::before {
+    content: "Distance: ";
+    opacity: 0.7;
+    margin-right: 4px;
+}
+
+.targethud-health-container {
+    position: relative;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 4px;
+    width: 100%;
+}
+
+.targethud-health-bar {
+    height: 100%;
+    width: 100%;
+    background: var(--trollium-accent-color, linear-gradient(90deg, rgb(64, 190, 255) 0%, rgb(129, 225, 255) 100%));
+    border-radius: 3px;
+    transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+    animation: health-pulse 2s infinite;
+}
+
+.targethud-no-animations,
+.targethud-no-animations * {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Targeting effect - pulsing border */
+@keyframes pulse-border {
+    0% { box-shadow: 0 0 0 0 rgba(64, 190, 255, 0.4); }
+    70% { box-shadow: 0 0 0 4px rgba(64, 190, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(64, 190, 255, 0); }
+}
+
+.targethud-container:not(.targethud-hidden) {
+    animation: pulse-border 2s infinite;
+}
+
+/* Health bar animation */
+@keyframes health-pulse {
+    0% { opacity: 0.9; }
+    50% { opacity: 1; }
+    100% { opacity: 0.9; }
+}
+
+/* Additional decorative elements */
+.targethud-player-name::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--accent-color, #4287f5);
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Additional visual effects */
+.targethud-content {
+    position: relative;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+    .targethud-container {
+        min-width: 130px;
+    }
+    
+    .targethud-content {
+        padding: 8px;
+    }
+    
+    .targethud-player-name {
+        font-size: 14px;
+    }
+    
+    .targethud-distance {
+        font-size: 11px;
+    }
+} 
